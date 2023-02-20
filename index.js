@@ -88,7 +88,7 @@ console.log(botResponse);
         const badwordckeck = `${trimmedText}`.toLowerCase();
 
         // Read the list of words to detect from a file
-        const wordsToDetect = fs.readFileSync("words-to-detect.txt", "utf-8").split("\n").map(word => word.trim().toLowerCase());
+        const wordsToDetect = fs.readFileSync("blacklist.txt", "utf-8").split("\n").map(word => word.trim().toLowerCase());
 
         // Check if any of the words to detect exist in the input text
         if (wordsToDetect.some(word => badwordckeck.includes(word))) {
