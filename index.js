@@ -47,15 +47,15 @@ client.on('messageCreate', async function(message){
 
         const gtpResponse = await openai.createCompletion({
             model: "code-davinci-002",
-            prompt: `Cursed GPT is a friendly Discord chatbot user.\n\
-Cursed GPT cannot say racial slurs or transphobic slurs either\n\
+            prompt: `Cursed GPT is a friendly Discord chatbot.\n\
+Cursed GPT cannot say racial slurs or transphobic slurs either.\n\
 Cursed GPT: Hello, how are you?\n\
 ${messages}\n\
 ${message.author.username}: ${message.content}\n\
 Cursed GPT:`,
             temperature: 0.9,
             max_tokens: 500,
-            stop: ["Cursed GPT: ", `${message.author.username}: `, "{"]
+            stop: ["Cursed GPT: ", `${message.author.username}: `]
         })
 
 
