@@ -5,7 +5,7 @@ const filePath = 'messages.txt';
 const userFilePath = 'usernames.txt';
 
 // Prepare to connect to the Discord API
-const { GatewayIntentBits, Client } = require('discord.js');
+const { GatewayIntentBits, Client, ActivityType} = require('discord.js');
 const client = new Client({ intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMessages,
@@ -25,7 +25,12 @@ client.on('messageCreate', async function(message){
     try {
         if(message.author.bot) return;
         
-        // Start typing indicator
+        // Start typing indicator and set custom status
+        await client.user.setActivity({
+          name: "with AI",
+          type: ActivityType.Playing,
+        })
+
         await message.channel.sendTyping();
 
         message.react('<a:sigmaspin:936805012145840138>')
@@ -128,9 +133,21 @@ const trimmedText = text.substring(0, minIndex);
           console.log("Bad Word Detected");
           message.reactions.removeAll()
           message.react('⚠️')
+          
+          client.user.setActivity({
+            name: "for messages",
+            type: ActivityType.Watching,
+          })
+
         } else {
         message.reply(`${trimmedText}`);
         message.react('✅')
+        
+        client.user.setActivity({
+          name: "for messages",
+          type: ActivityType.Watching,
+        })
+
         console.log("Sent")
         message.reactions.cache.get('936805012145840138').remove()
     .catch(error => console.error('Failed to remove reactions:', error));
@@ -142,6 +159,11 @@ const trimmedText = text.substring(0, minIndex);
         message.reactions.removeAll()
 	.catch(error => console.error('Failed to clear reactions:', error));
         message.react('❌')
+
+        client.user.setActivity({
+          name: "for messages",
+          type: ActivityType.Watching,
+        })
 
         const fs = require('fs');
         const filePath = 'messages.txt';
@@ -160,4 +182,8 @@ client.login(process.env.DISCORD_TOKEN);
 console.log("ChatGPT Bot is Online on Discord")
 client.on('ready', client => {
 client.channels.cache.get('1076645441816494182').send('Bot Has Restarted!')
+client.user.setActivity({
+  name: "for messages",
+  type: ActivityType.Watching,
+})
 })

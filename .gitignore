@@ -2,3 +2,4 @@ node_modules
 usernames.txt
 messages.txt
 .env
+image_generation
