@@ -32,12 +32,19 @@ client.on('messageCreate', async function(message){
 
         const fs = require('fs');        
         const filePath = 'messages.txt';
-        const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
+        //const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
 
-        while (messages.length >= 150) {
-          messages.shift();
+        const MAX_CHARACTERS = 20000;
+
+        const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
+        let totalCharacters = messages.join('').length;
+        
+        while (totalCharacters >= MAX_CHARACTERS) {
+          const removedMessage = messages.shift();
+          totalCharacters -= removedMessage.length;
         }
         
+        console.log(totalCharacters)
         
 
         //const userFilePath = 'usernames.txt';
@@ -83,7 +90,7 @@ words.forEach(word => {
 const trimmedText = text.substring(0, minIndex);
 
 // Output the final trimmed text
-console.log(botResponse);
+//console.log(botResponse);
 
         const badwordckeck = `${trimmedText}`.toLowerCase();
 
@@ -124,6 +131,7 @@ console.log(botResponse);
         } else {
         message.reply(`${trimmedText}`);
         message.react('✅')
+        console.log("Sent")
         message.reactions.cache.get('936805012145840138').remove()
     .catch(error => console.error('Failed to remove reactions:', error));
     return;          
