@@ -9,7 +9,9 @@ url = "http://127.0.0.1:7860"
 
 payload = {
     "prompt": sys.argv[1],
-    "steps": sys.argv[2]
+    "steps": sys.argv[2],
+    "width": sys.argv[3],
+    "height": sys.argv[4],
 }
 
 response = requests.post(url=f'{url}/sdapi/v1/txt2img', json=payload)

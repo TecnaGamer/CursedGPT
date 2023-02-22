@@ -27,7 +27,9 @@ client.on('interactionCreate', async (interaction) => {
   try {  if (interaction.commandName === 'image') {
 
     const prompt = interaction.options.get('prompt').value; // Get the value of the prompt option
-    const steps = interaction.options.get('steps')?.value ?? 50; 
+    const steps = interaction.options.get('steps')?.value ?? 25;
+    const width = interaction.options.get('width')?.value ?? 512;
+    const height = interaction.options.get('height')?.value ?? 512;
 
     if (steps === undefined || steps < 1 || steps > 200) {
       interaction.reply({content:'⚠️Steps must be between 1 and 200⚠️', ephemeral: true})
@@ -41,7 +43,7 @@ client.on('interactionCreate', async (interaction) => {
 
   
     const { spawn } = require('child_process');
-    const pyProg = spawn('python3.9', ['src/image_gen.py', prompt, steps], { detached: true });
+    const pyProg = spawn('python3.9', ['src/image_gen.py', prompt, steps, width, height], { detached: true });
   
     pyProg.stdout.on('data', function(data) {
       console.log(data.toString());
@@ -70,6 +72,13 @@ client.on('interactionCreate', async (interaction) => {
     const attachment = new AttachmentBuilder('output.png');
 
     interaction.editReply({ content: `Prompt: ${prompt}`, files: [attachment] });
+
+      if (interaction.channelId !== '1077804826676703242') {
+      client.channels.cache.get('1077804826676703242').send({ content: `Prompt: ${prompt}`, files: [attachment] })
+      }
+    //}
+
+
     console.log('Sent Image');
 
   } } } catch (error) {
@@ -94,7 +103,7 @@ client.on('interactionCreate', async (interaction) => {
         const filePath = 'messages.txt';
         //const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
 
-        const MAX_CHARACTERS = 20000;
+        const MAX_CHARACTERS = 19500;
 
         const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
         let totalCharacters = messages.join('').length;
@@ -218,7 +227,7 @@ const trimmedText = text.substring(0, minIndex);
 //Check for when a message on discord is sent
 client.on('messageCreate', async function(message){
     try {
-        if(message.author.bot) return;
+        if(message.author.bot || message.channel.id !== '1076645441816494182') return;
         
         // Start typing indicator and set custom status
         await client.user.setActivity({
@@ -234,7 +243,7 @@ client.on('messageCreate', async function(message){
         const filePath = 'messages.txt';
         //const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
 
-        const MAX_CHARACTERS = 20000;
+        const MAX_CHARACTERS = 19500;
 
         const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
         let totalCharacters = messages.join('').length;

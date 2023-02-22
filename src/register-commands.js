@@ -8,15 +8,25 @@ const commands = [
         options: 
         [
             {
-            name: 'prompt',
-            description: 'Prompt for the image gen',
-            type: ApplicationCommandOptionType.String,
-            required: true,
+                name: 'prompt',
+                description: 'Prompt for the image gen',
+                type: ApplicationCommandOptionType.String,
+                required: true,
             },
             {
-            name: 'steps',
-            description: 'How many times to improve the generated image iteratively; higher values take longer; Default is 50',
-            type: ApplicationCommandOptionType.Number,
+                name: 'steps',
+                description: 'How many times to improve the image; Higher values take longer to generate; The default is 25',
+                type: ApplicationCommandOptionType.Number,
+            },
+            {
+                name: 'width',
+                description: 'Set the width of the image in pixels; Higher values take longer to generate; The default is 512',
+                type: ApplicationCommandOptionType.Number,
+            },
+            {
+                name: 'height',
+                description: 'Set the height of the image in pixels; Higher values take longer to generate; The default is 512',
+                type: ApplicationCommandOptionType.Number
             }
             
         ]
