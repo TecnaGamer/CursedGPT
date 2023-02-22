@@ -41,7 +41,7 @@ client.on('interactionCreate', async (interaction) => {
 
   
     const { spawn } = require('child_process');
-    const pyProg = spawn('python3.9', ['/src/image_gen.py', prompt, steps], { detached: true });
+    const pyProg = spawn('python3.9', ['src/image_gen.py', prompt, steps], { detached: true });
   
     pyProg.stdout.on('data', function(data) {
       console.log(data.toString());
