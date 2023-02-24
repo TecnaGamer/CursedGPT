@@ -36,11 +36,27 @@ client.on('interactionCreate', async (interaction) => {
       //throw new Error('Steps must be between 1 and 200');
     } else {
 
+const request = require('request');
+
+const url = "http://127.0.0.1:7860";
+
+// await interaction.Reply(`Prompt: ${prompt}\n\
+//     <a:loading:1078160725719138304> Waiting <a:loading:1078160725719138304>`)
+//     console.log('Painting');
+
+request.get(`${url}/sdapi/v1/progress`, (error, response, body) => {
+if (error) {
+console.error(error);
+return;
+}
+
+const progress = JSON.parse(body).state.job_count;
+console.log(progress);
+});
+
     interaction.reply(`Prompt: ${prompt}\n\
     <a:sigmaspin:936805012145840138> Generating <a:sigmaspin:936805012145840138>`)
     console.log('Painting');
-
-
   
     const { spawn } = require('child_process');
     const pyProg = spawn('python3.9', ['src/image_gen.py', prompt, steps, width, height], { detached: true });
@@ -52,6 +68,8 @@ client.on('interactionCreate', async (interaction) => {
     pyProg.stderr.on('data', function(data) {
       console.error(data.toString());
     });
+    
+
 
     // Create a promise that resolves when the pyProg process emits the 'exit' event
     const exitPromise = new Promise((resolve, reject) => {
@@ -64,8 +82,12 @@ client.on('interactionCreate', async (interaction) => {
       });
     });
     
+    
+
     // Wait for the promise to resolve before sending the reply
     await exitPromise;
+    await new Promise(resolve => setTimeout(resolve, 1000));
+
 
     interaction.editReply('<a:TecnaDeafult:970719096129871932>Uploading<a:TecnaDeafult:970719096129871932>')
 
@@ -103,7 +125,7 @@ client.on('interactionCreate', async (interaction) => {
         const filePath = 'messages.txt';
         //const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
 
-        const MAX_CHARACTERS = 19500;
+        const MAX_CHARACTERS = 19000;
 
         const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
         let totalCharacters = messages.join('').length;
@@ -227,7 +249,7 @@ const trimmedText = text.substring(0, minIndex);
 //Check for when a message on discord is sent
 client.on('messageCreate', async function(message){
     try {
-        if(message.author.bot || message.channel.id !== '1076645441816494182') return;
+        if(message.system ||message.author.bot || message.channel.id !== '1076645441816494182') return;
         
         // Start typing indicator and set custom status
         await client.user.setActivity({
@@ -243,7 +265,7 @@ client.on('messageCreate', async function(message){
         const filePath = 'messages.txt';
         //const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
 
-        const MAX_CHARACTERS = 19500;
+        const MAX_CHARACTERS = 15000;
 
         const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
         let totalCharacters = messages.join('').length;
@@ -263,8 +285,9 @@ client.on('messageCreate', async function(message){
 
         const gtpResponse = await openai.createCompletion({
             model: "code-davinci-002",
-            prompt: `Cursed GPT is a friendly Discord chatbot.\n\
-Cursed GPT cannot say racial slurs or transphobic slurs either.\n\
+            prompt: `You are a friendly, fun, and helpful Discord chatbot called "Cursed GPT".\n\
+Tou cannot say racial slurs or transphobic slurs either.\n\
+And you should try not to repeat yourself.\n\
 Cursed GPT: Hello, how are you?\n\
 ${messages}\n\
 ${message.author.username}: ${message.content}\n\
@@ -359,7 +382,7 @@ const trimmedText = text.substring(0, minIndex);
         }
 
     } catch (err) {
-        console.log("Error")
+        console.log(err)
         message.reactions.removeAll()
 	.catch(error => console.error('Failed to clear reactions:', error));
         message.react('❌')
