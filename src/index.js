@@ -360,6 +360,10 @@ const trimmedText = text.substring(0, minIndex);
           console.log("Bad Word Detected");
           message.reactions.removeAll()
           message.react('⚠️')
+          client.channels.cache.get('1078730517089890374').send(`Message:\n\
+${message.author.username}: ${message.content}\n\
+Bot reply:\n\
+${trimmedText}`)
           
           client.user.setActivity({
             name: "for messages",
