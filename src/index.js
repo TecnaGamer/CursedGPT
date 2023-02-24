@@ -293,7 +293,7 @@ ${messages}\n\
 ${message.author.username}: ${message.content}\n\
 Cursed GPT:`,
             temperature: 0.9,
-            max_tokens: 500,
+            max_tokens: 2000,
             stop: ["Cursed GPT: ", `${message.author.username}: `]
         })
 
@@ -367,7 +367,18 @@ const trimmedText = text.substring(0, minIndex);
           })
 
         } else {
-        message.reply(`${trimmedText}`);
+          const MAX_MESSAGE_LENGTH = 2000;
+
+          if (trimmedText.length > MAX_MESSAGE_LENGTH) {
+            const chunks = trimmedText.match(/.{1,2000}/g);
+          
+            for (let chunk of chunks) {
+              message.reply(chunk);
+            }
+          } else {
+            message.reply(trimmedText);
+          }
+          
         message.react('✅')
         
         client.user.setActivity({
