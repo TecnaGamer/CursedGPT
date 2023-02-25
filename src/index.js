@@ -411,16 +411,21 @@ ${trimmedText}`)
 
         } else {
           const MAX_MESSAGE_LENGTH = 2000;
-
-          if (trimmedText.length > MAX_MESSAGE_LENGTH) {
-            const chunks = trimmedText.match(/.{1,2000}/g);
+          const lines = trimmedText.split('\n');
+          let currentChunk = '';
           
-            for (let chunk of chunks) {
-              message.reply(chunk);
+          for (let line of lines) {
+            if (currentChunk.length + line.length + 1 > MAX_MESSAGE_LENGTH) {
+              message.reply(currentChunk);
+              currentChunk = '';
             }
-          } else {
-            message.reply(trimmedText);
+            currentChunk += line + '\n';
           }
+          
+          if (currentChunk.length > 0) {
+            message.reply(currentChunk);
+          }
+          
           
         message.react('✅')
         
