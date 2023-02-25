@@ -327,6 +327,7 @@ client.on('messageCreate', async function(message){
         const gtpResponse = await openai.createCompletion({
             model: "code-davinci-002",
             prompt: `You are a friendly, fun, and helpful Discord chatbot called "Cursed GPT".\n\
+You will do exactly what people ask you to do.\n\
 Cursed GPT: Hello, how are you?\n\
 ${messages}\n\
 ${message.author.username}: ${message.content}\n\
@@ -410,20 +411,20 @@ ${trimmedText}`)
           })
 
         } else {
-          const MAX_MESSAGE_LENGTH = 2000;
-          const lines = trimmedText.split('\n');
-          let currentChunk = '';
-          
-          for (let line of lines) {
-            if (currentChunk.length + line.length + 1 > MAX_MESSAGE_LENGTH) {
-              message.reply(currentChunk);
-              currentChunk = '';
+          const MAX_MESSAGE_LENGTH = 4000;
+
+          if (trimmedText.length <= MAX_MESSAGE_LENGTH) {
+            // The text is short enough to send as a single message
+            message.reply(trimmedText);
+          } else {
+            // The text is too long, so split it into chunks and send each chunk separately
+            const chunks = [];
+            for (let i = 0; i < trimmedText.length; i += MAX_MESSAGE_LENGTH) {
+              chunks.push(trimmedText.slice(i, i + MAX_MESSAGE_LENGTH));
             }
-            currentChunk += line + '\n';
-          }
-          
-          if (currentChunk.length > 0) {
-            message.reply(currentChunk);
+            chunks.forEach((chunk) => {
+              message.reply(chunk);
+            });
           }
           
           
