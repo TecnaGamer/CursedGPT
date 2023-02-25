@@ -43,6 +43,23 @@ const commands = [
             required: true,
             }
         ]
+    },
+    {
+        name: 'memory',
+        description: 'Tools for the bots memory',
+        options:
+        [
+            {
+                name: 'clear',
+                description: "Clear the bot's memory",
+                type: ApplicationCommandOptionType.Subcommand
+            },
+            {
+                name: 'bump',
+                description: "Bumps the oldest line int he bot's memory.",
+                type: ApplicationCommandOptionType.Subcommand
+            }
+        ]
     }
 ];
 

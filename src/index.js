@@ -109,6 +109,48 @@ console.log(progress);
   }
 
 
+  if (interaction.commandName === 'memory') {
+    if (interaction.options.getSubcommand() === 'clear') {
+      const fs = require('fs');
+
+fs.writeFile('messages.txt', '', function (err) {
+  if (err) throw err;
+  console.log('File cleared!');
+});
+
+      await interaction.reply('Memory cleared!');
+    }
+    if (interaction.options.getSubcommand() === 'bump') {
+      const fs = require('fs');
+
+      const filePath = 'messages.txt';
+      
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) throw err;
+      
+        // Split the file contents into an array of lines
+        const lines = data.split('\n');
+      
+        // Remove the first line (i.e., the oldest line)
+        lines.shift();
+      
+        // Join the remaining lines back into a single string
+        const newContent = lines.join('\n');
+      
+        // Write the updated content back to the file
+        fs.writeFile(filePath, newContent, (err) => {
+          if (err) throw err;
+      
+          console.log('Memory Bumped');
+        });
+      });
+      
+      await interaction.reply('Memory Bumped');
+    }
+  }
+  
+
+
   if (interaction.commandName === 'talk') {
     const prompt = interaction.options.get('prompt');
         // Start typing indicator and set custom status
@@ -125,7 +167,7 @@ console.log(progress);
         const filePath = 'messages.txt';
         //const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
 
-        const MAX_CHARACTERS = 19000;
+        const MAX_CHARACTERS = 12000;
 
         const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
         let totalCharacters = messages.join('').length;
@@ -146,17 +188,16 @@ console.log(progress);
         const gtpResponse = await openai.createCompletion({
             model: "code-davinci-002",
             prompt: `Cursed GPT is a friendly Discord chatbot.\n\
-Cursed GPT cannot say racial slurs or transphobic slurs either.\n\
 Cursed GPT: Hello, how are you?\n\
 ${interaction.member.user.username}: ${prompt}\n\
 Cursed GPT:`,
             temperature: 0.9,
-            max_tokens: 500,
+            max_tokens: 2000,
             stop: ["Cursed GPT: ", `${interaction.member.user.username}: `]
         })
 
 
-        const newMessage = `${interaction.member.user.username}: ${prompt}`;
+        //const newMessage = `${interaction.member.user.username}: ${prompt}`;
         const botResponse = `${gtpResponse.data.choices[0].text}`;
 
 //        const fs = require("fs");
@@ -195,8 +236,8 @@ const trimmedText = text.substring(0, minIndex);
         } else{
         const fullMessage = `${newMessage}\nCursed GPT: ${trimmedText}\n`;
 
-        messages.push(fullMessage);
-        fs.writeFileSync(filePath, messages.join('\n'));
+        //messages.push(fullMessage);
+        //fs.writeFileSync(filePath, messages.join('\n'));
         }
         const username = interaction.member.user.username;
         const userMessage = `\n${username}:`;  
@@ -265,12 +306,12 @@ client.on('messageCreate', async function(message){
         const filePath = 'messages.txt';
         //const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
 
-        const MAX_CHARACTERS = 15000;
+        const MAX_CHARACTERS = 12000;
 
         const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
         let totalCharacters = messages.join('').length;
         
-        while (totalCharacters >= MAX_CHARACTERS) {
+        while (totalCharacters >= MAX_CHARACTERS || messages.length >= 1000) {
           const removedMessage = messages.shift();
           totalCharacters -= removedMessage.length;
         }
@@ -286,8 +327,6 @@ client.on('messageCreate', async function(message){
         const gtpResponse = await openai.createCompletion({
             model: "code-davinci-002",
             prompt: `You are a friendly, fun, and helpful Discord chatbot called "Cursed GPT".\n\
-Tou cannot say racial slurs or transphobic slurs either.\n\
-And you should try not to repeat yourself.\n\
 Cursed GPT: Hello, how are you?\n\
 ${messages}\n\
 ${message.author.username}: ${message.content}\n\
