@@ -1,17 +1,22 @@
 // Create a Discord Bot using OpenAI API that interacts on the Discord Server
 require('dotenv').config();
 
-const filePath = 'messages.txt';
+//const filePath = 'messages.txt';
 const userFilePath = 'usernames.txt';
 
 // Prepare to connect to the Discord API
-const { GatewayIntentBits, Client, ActivityType, AttachmentBuilder} = require('discord.js');
+const { GatewayIntentBits, Client, ActivityType, AttachmentBuilder, Partials, PermissionsBitField} = require('discord.js');
 const client = new Client({ intents: [
     GatewayIntentBits.Guilds,
     GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessages,
-    GatewayIntentBits.MessageContent
-]})
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.DirectMessages
+],
+partials: [
+  Partials.Channel
+]
+})
 
 // Prepare connection to OpenAI API
 const { Configuration, OpenAIApi } = require('openai');
@@ -94,11 +99,11 @@ console.log(progress);
     const attachment = new AttachmentBuilder('output.png');
 
     interaction.editReply({ content: `Prompt: ${prompt}`, files: [attachment] });
-
+    if (interaction.channel.type === 0) {
       if (interaction.channelId !== '1077804826676703242') {
       client.channels.cache.get('1077804826676703242').send({ content: `Prompt: ${prompt}`, files: [attachment] })
       }
-    //}
+    }
 
 
     console.log('Sent Image');
@@ -113,16 +118,53 @@ console.log(progress);
     if (interaction.options.getSubcommand() === 'clear') {
       const fs = require('fs');
 
-fs.writeFile('messages.txt', '', function (err) {
+      if (interaction.channel.type === 1) {
+        const dms = interaction.channel.id;
+
+        fs.writeFile(`dms/${dms}/messages.txt`, '', function (err) {
+          if (err) throw err;
+          console.log('File cleared!');
+        });
+      } else {
+
+      const guild = interaction.guildId;
+
+fs.writeFile(`guilds/${guild}/messages.txt`, '', function (err) {
   if (err) throw err;
   console.log('File cleared!');
 });
-
+      }
       await interaction.reply('Memory cleared!');
     }
     if (interaction.options.getSubcommand() === 'bump') {
       const fs = require('fs');
 
+      if (interaction.channel.type === 1) {
+        const dms = interaction.channel.id;
+      const filePath = `dms/${dms}/messages.txt`;
+      
+      fs.readFile(filePath, 'utf8', (err, data) => {
+        if (err) throw err;
+      
+        // Split the file contents into an array of lines
+        const lines = data.split('\n');
+      
+        // Remove the first line (i.e., the oldest line)
+        lines.shift();
+      
+        // Join the remaining lines back into a single string
+        const newContent = lines.join('\n');
+      
+        // Write the updated content back to the file
+        fs.writeFile(filePath, newContent, (err) => {
+          if (err) throw err;
+          
+      
+          console.log('Memory Bumped');
+        
+        });
+      });
+    } else {
       const filePath = 'messages.txt';
       
       fs.readFile(filePath, 'utf8', (err, data) => {
@@ -140,174 +182,139 @@ fs.writeFile('messages.txt', '', function (err) {
         // Write the updated content back to the file
         fs.writeFile(filePath, newContent, (err) => {
           if (err) throw err;
+          
       
           console.log('Memory Bumped');
+        
         });
       });
-      
+    }
       await interaction.reply('Memory Bumped');
     }
   }
   
 
-
-  if (interaction.commandName === 'talk') {
-    const prompt = interaction.options.get('prompt');
-        // Start typing indicator and set custom status
-        await client.user.setActivity({
-          name: "with AI",
-          type: ActivityType.Playing,
-        })
-
-        //await interaction.channel.sendTyping();
-
-        //interaction.react('<a:sigmaspin:936805012145840138>')
-
-        const fs = require('fs');        
-        const filePath = 'messages.txt';
-        //const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
-
-        const MAX_CHARACTERS = 12000;
-
-        const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
-        let totalCharacters = messages.join('').length;
-        
-        while (totalCharacters >= MAX_CHARACTERS) {
-          const removedMessage = messages.shift();
-          totalCharacters -= removedMessage.length;
-        }
-        
-        console.log(totalCharacters)
-        
-
-        //const userFilePath = 'usernames.txt';
-        //const stopWords = fs.readFileSync(userFilePath, 'utf8').split('\n').filter(Boolean); // filter out empty lines
-
-        console.log("Writing")
-
-        const gtpResponse = await openai.createCompletion({
-            model: "code-davinci-002",
-            prompt: `Cursed GPT is a friendly Discord chatbot.\n\
-Cursed GPT: Hello, how are you?\n\
-${interaction.member.user.username}: ${prompt}\n\
-Cursed GPT:`,
-            temperature: 0.9,
-            max_tokens: 2000,
-            stop: ["Cursed GPT: ", `${interaction.member.user.username}: `]
-        })
-
-
-        //const newMessage = `${interaction.member.user.username}: ${prompt}`;
-        const botResponse = `${gtpResponse.data.choices[0].text}`;
-
-//        const fs = require("fs");
-
-// Sample text to scan and trim
-const text = `${gtpResponse.data.choices[0].text}`;
-
-// Read the list of words to trim after from a file
-const words = fs.readFileSync("usernames.txt", "utf-8").split("\n").map(word => word.trim());
-
-// Find the smallest index of any word in the list in the input text
-let minIndex = text.length;
-words.forEach(word => {
-  const wordIndex = text.indexOf(word);
-  if (wordIndex !== -1 && wordIndex < minIndex) {
-    minIndex = wordIndex;
-  }
-});
-
-// Trim the text after the smallest index found (if any)
-const trimmedText = text.substring(0, minIndex);
-
-// Output the final trimmed text
-//console.log(botResponse);
-
-        const badwordckeck = `${trimmedText}`.toLowerCase();
-
-        // Read the list of words to detect from a file
-        const wordsToDetect = fs.readFileSync("blacklist.txt", "utf-8").split("\n").map(word => word.trim().toLowerCase());
-
-        // Check if any of the words to detect exist in the input text
-        if (wordsToDetect.some(word => badwordckeck.includes(word))) {
-        // Run your code here
-        //console.log("Word detected!");
-        
-        } else{
-        const fullMessage = `${newMessage}\nCursed GPT: ${trimmedText}\n`;
-
-        //messages.push(fullMessage);
-        //fs.writeFileSync(filePath, messages.join('\n'));
-        }
-        const username = interaction.member.user.username;
-        const userMessage = `\n${username}:`;  
-        
-        // Check if username already exists in the file
-        fs.readFile(userFilePath, 'utf8', function(err, data) {
-          if (err) throw err;
-          if (!data.includes(username)) {
-            fs.appendFile(userFilePath, userMessage, function (err) {
-              if (err) throw err;
-            });
-          }
-        });
-        
-
-
-        if (wordsToDetect.some(word => badwordckeck.includes(word))) {
-          // Run your code here
-          console.log("Bad Word Detected");
-          //interaction.reactions.removeAll()
-          //interaction.react('⚠️')
-          
-          client.user.setActivity({
-            name: "for messages",
-            type: ActivityType.Watching,
-          })
-
-        } else {
-        interaction.reply(`${trimmedText}`);
-        //interaction.react('✅')
-        
-        client.user.setActivity({
-          name: "for messages",
-          type: ActivityType.Watching,
-        })
-
-        console.log("Sent")
-        //interaction.reactions.cache.get('936805012145840138').remove()
-    //.catch(error => console.error('Failed to remove reactions:', error));
-    return;          
-        }
-
+  if (interaction.commandName === 'setting') {
+    if (!interaction.guild) {
+      await interaction.reply('This command can only be run in a server context.');
+      return;
+    }
+            // Check if the user is an admin
+            const member = interaction.guild.members.cache.get(interaction.user.id);
+            if (!member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+                await interaction.reply('You do not have permission to run this command.');
+                return;
+            }
     
+            // The user is an admin, continue with the command logic
+    if (interaction.options.getSubcommand() === 'set') {
+      const channel = interaction.options.getChannel('channel');
+      const channelId = channel.toString().match(/(\d+)/)[1];
+//      console.log(channelId);
+      
+      const guild = interaction.guildId;
+      
+      const fs = require('fs');
+    
+      const directory = `guilds/${guild}`;
+      const filename = `${directory}/settings.txt`;
+    
+      // Create the directory if it doesn't exist
+      if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory);
+      }
+    
+      // Create the file if it doesn't exist
+      if (!fs.existsSync(filename)) {
+        fs.writeFileSync(filename, '');
+      }
+    
+      // Write to the file
+      fs.writeFile(filename, channelId.toString(), (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        console.log(`Successfully wrote to ${filename} // ${channelId}`);
+        interaction.reply(`Channel set to ${channel}`);
+      });
+    }
+  }
+  
+  
+  
 
-  };
+
+
 })
+
+
+
+
+
+
+
+
 
 
 
 //Check for when a message on discord is sent
 client.on('messageCreate', async function(message){
-    try {
-        if(message.system ||message.author.bot || message.channel.id !== '1076645441816494182') return;
-        
-        // Start typing indicator and set custom status
-        await client.user.setActivity({
-          name: "with AI",
-          type: ActivityType.Playing,
-        })
+  let channel;
+  let directory;
+  let filename;
+  let filePath = '';
+  if (message.channel.type === 1) {
+    console.log('Dm received')
+    channel = message.channel.id
 
-        await message.channel.sendTyping();
+    const fs = require('fs'); 
+    const directory = `dms/${channel}`;
+    const filename = `${directory}/messages.txt`;
+    if (!fs.existsSync(directory)) {
+      fs.mkdirSync(directory);
+    }
+          // Create the file if it doesn't exist
+          if (!fs.existsSync(filename)) {
+            fs.writeFileSync(filename, '');
+          }
+            filePath = `dms/${channel}/messages.txt`;
+  } else {
+    const guild = message.guild.id;
+    const fs = require('fs');
+    channel = fs.readFileSync(`guilds/${guild}/settings.txt`).toString().trim(); // read the channel ID from settings.txt
+    const directory = `guilds/${guild}`;
+    const filename = `${directory}/messages.txt`;
+          // Create the file if it doesn't exist
+          if (!fs.existsSync(filename)) {
+            fs.writeFileSync(filename, '');
+          }
+            filePath = `guilds/${guild}/messages.txt`;
+  }
+  try {
+    if(message.system || message.author.bot || message.channel.id !== channel) return; // only react to messages from the specified channel
 
-        message.react('<a:sigmaspin:936805012145840138>')
+    // Start typing indicator and set custom status
+    await client.user.setActivity({
+      name: "with AI",
+      type: ActivityType.Playing,
+    })
 
-        const fs = require('fs');        
-        const filePath = 'messages.txt';
-        //const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
+    await message.channel.sendTyping();
+
+    const reaction = await message.react('<a:sigmaspin:936805012145840138>');
+
+// Assume `client` is a valid Discord.js client object
+
+client.on('message', (message) => {
+  const channelId = message.channel.id;
+  console.log(`The channel ID is ${channelId}`);
+});
+
+
 
         const MAX_CHARACTERS = 12000;
-
+        const fs = require('fs'); 
         const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
         let totalCharacters = messages.join('').length;
         
@@ -326,15 +333,15 @@ client.on('messageCreate', async function(message){
 
         const gtpResponse = await openai.createCompletion({
             model: "code-davinci-002",
-            prompt: `You are a friendly, fun, and helpful Discord chatbot called "Cursed GPT".\n\
+            prompt: `You are a friendly, fun, and helpful Discord chatbot called "CursedGPT".\n\
 You will do exactly what people ask you to do.\n\
-Cursed GPT: Hello, how are you?\n\
+CursedGPT: Hello, how are you?\n\
 ${messages}\n\
 ${message.author.username}: ${message.content}\n\
-Cursed GPT:`,
+CursedGPT:`,
             temperature: 0.9,
-            max_tokens: 2000,
-            stop: ["Cursed GPT: ", `${message.author.username}: `]
+            max_tokens: 1000,
+            stop: ["CursedGPT: ", `${message.author.username}: `]
         })
 
 
@@ -411,7 +418,7 @@ ${trimmedText}`)
           })
 
         } else {
-          const MAX_MESSAGE_LENGTH = 4000;
+          const MAX_MESSAGE_LENGTH = 2000;
 
           if (trimmedText.length <= MAX_MESSAGE_LENGTH) {
             // The text is short enough to send as a single message
@@ -427,42 +434,59 @@ ${trimmedText}`)
             });
           }
           
+
+          const botUser = message.client.user;
+const userReactions = message.reactions.cache.filter(reaction => reaction.users.cache.has(botUser.id));
+for (const reaction of userReactions.values()) {
+  await reaction.users.remove(botUser.id);
+}
           
-        message.react('✅')
-        
+          await message.react('✅');
         client.user.setActivity({
           name: "for messages",
           type: ActivityType.Watching,
         })
 
         console.log("Sent")
-        message.reactions.cache.get('936805012145840138').remove()
-    .catch(error => console.error('Failed to remove reactions:', error));
+        
+        
+        
+
+
+
+    //.catch(error => console.error('Failed to remove reactions:', error));
     return;          
         }
 
     } catch (err) {
         console.log(err)
-        message.reactions.removeAll()
-	.catch(error => console.error('Failed to clear reactions:', error));
+        const botUser = message.client.user;
+        const userReactions = message.reactions.cache.filter(reaction => reaction.users.cache.has(botUser.id));
+        for (const reaction of userReactions.values()) {
+          await reaction.users.remove(botUser.id);
+        }
         message.react('❌')
 
         client.user.setActivity({
           name: "for messages",
           type: ActivityType.Watching,
         })
-
-        const fs = require('fs');
-        const filePath = 'messages.txt';
-        const messages = fs.readFileSync(filePath, 'utf8').trim().split('\n');
-        messages.shift();
-
     }
-
-
     
 
 });
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Log the bit into Discord

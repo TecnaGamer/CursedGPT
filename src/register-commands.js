@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { REST, Routes, ApplicationCommandOptionType } = require('discord.js');
+const { REST, Routes, ApplicationCommandOptionType} = require('discord.js');
 
 const commands = [
     {
@@ -31,19 +31,19 @@ const commands = [
             
         ]
     },
-    {
-        name: 'talk',
-        description: 'Make the bot say a message on a blank memory',
-        options: 
-        [
-            {
-            name: 'prompt',
-            description: 'prompt for the bot',
-            type: ApplicationCommandOptionType.String,
-            required: true,
-            }
-        ]
-    },
+    // {
+    //     name: 'talk',
+    //     description: 'Make the bot say a message on a blank memory',
+    //     options: 
+    //     [
+    //         {
+    //         name: 'prompt',
+    //         description: 'prompt for the bot',
+    //         type: ApplicationCommandOptionType.String,
+    //         required: true,
+    //         }
+    //     ]
+    // },
     {
         name: 'memory',
         description: 'Tools for the bots memory',
@@ -59,7 +59,30 @@ const commands = [
                 description: "Bumps the oldest line int he bot's memory.",
                 type: ApplicationCommandOptionType.Subcommand
             }
-        ]
+        ],
+        defaultPermission: false,
+    },
+    {
+        name: 'setting',
+        description: 'Settings for the bot',
+        options:
+        [
+            {
+                name: 'set',
+                description: 'Set the channel the bot will chat in',
+                type: ApplicationCommandOptionType.Subcommand,
+                options:
+                [
+                    {
+                        name: 'channel',
+                        description: 'Set the channel',
+                        type: ApplicationCommandOptionType.Channel,
+                        required: true
+                    }
+                ]
+            },
+        ],
+        defaultPermission: false,
     }
 ];
 
@@ -67,17 +90,14 @@ const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 
 (async () => {
     try {
-        console.log('Regestering slash commands...');
+        console.log('Registering slash commands...');
 
         await rest.put(
-            Routes.applicationGuildCommands(
-                process.env.CLIENT_ID, 
-                process.env.GUILD_ID
-                ),
+            Routes.applicationCommands(process.env.CLIENT_ID),
             { body: commands }
-        )
-        console.log('Commands regestered!');
+        );
+        console.log('Commands registered globally!');
     } catch (error) {
-        console.log(`Test error: ${error}`);
+        console.error(error);
     }
 })();
