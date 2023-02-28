@@ -98,10 +98,16 @@ console.log(progress);
 
     const attachment = new AttachmentBuilder('output.png');
 
+
+
     interaction.editReply({ content: `Prompt: ${prompt}`, files: [attachment] });
     if (interaction.channel.type === 0) {
-      if (interaction.channelId !== '1077804826676703242') {
-      client.channels.cache.get('1077804826676703242').send({ content: `Prompt: ${prompt}`, files: [attachment] })
+      guild = interaction.guild.id
+      const fs = require('fs');
+      imagelogs = fs.readFileSync(`guilds/${guild}/image-logs.txt`).toString().trim();
+
+      if (interaction.channelId !== imagelogs) {
+      client.channels.cache.get(imagelogs).send({ content: `Prompt: ${prompt}`, files: [attachment] })
       }
     }
 
@@ -207,7 +213,7 @@ fs.writeFile(`guilds/${guild}/messages.txt`, '', function (err) {
             }
     
             // The user is an admin, continue with the command logic
-    if (interaction.options.getSubcommand() === 'set') {
+    if (interaction.options.getSubcommand() === 'set-chat') {
       const channel = interaction.options.getChannel('channel');
       const channelId = channel.toString().match(/(\d+)/)[1];
 //      console.log(channelId);
@@ -236,9 +242,44 @@ fs.writeFile(`guilds/${guild}/messages.txt`, '', function (err) {
           return;
         }
         console.log(`Successfully wrote to ${filename} // ${channelId}`);
-        interaction.reply(`Channel set to ${channel}`);
+        interaction.reply(`Chat channel set to ${channel}`);
       });
     }
+
+    if (interaction.options.getSubcommand() === 'set-image-logs') {
+      const channel = interaction.options.getChannel('channel');
+      const channelId = channel.toString().match(/(\d+)/)[1];
+//      console.log(channelId);
+      
+      const guild = interaction.guildId;
+      
+      const fs = require('fs');
+    
+      const directory = `guilds/${guild}`;
+      const filename = `${directory}/image-logs.txt`;
+    
+      // Create the directory if it doesn't exist
+      if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory);
+      }
+    
+      // Create the file if it doesn't exist
+      if (!fs.existsSync(filename)) {
+        fs.writeFileSync(filename, '');
+      }
+    
+      // Write to the file
+      fs.writeFile(filename, channelId.toString(), (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        console.log(`Successfully wrote to ${filename} // ${channelId}`);
+        interaction.reply(`Image logs channel set to ${channel}`);
+      });
+    }
+
+
   }
   
   
@@ -340,7 +381,7 @@ ${messages}\n\
 ${message.author.username}: ${message.content}\n\
 CursedGPT:`,
             temperature: 0.9,
-            max_tokens: 1000,
+            max_tokens: 1500,
             stop: ["CursedGPT: ", `${message.author.username}: `]
         })
 

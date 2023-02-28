@@ -68,7 +68,7 @@ const commands = [
         options:
         [
             {
-                name: 'set',
+                name: 'set-chat',
                 description: 'Set the channel the bot will chat in',
                 type: ApplicationCommandOptionType.Subcommand,
                 options:
@@ -81,6 +81,20 @@ const commands = [
                     }
                 ]
             },
+            {
+            name: 'set-image-logs',
+            description: 'Set the channel all generated images will be sent to',
+            type: ApplicationCommandOptionType.Subcommand,
+            options:
+            [
+                {
+                    name: 'channel',
+                    description: 'Set the channel',
+                    type: ApplicationCommandOptionType.Channel,
+                    required: true
+                }
+            ]
+        }
         ],
         defaultPermission: false,
     }
