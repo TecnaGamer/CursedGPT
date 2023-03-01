@@ -580,8 +580,23 @@ for (const reaction of userReactions.values()) {
 // Log the bit into Discord
 client.login(process.env.DISCORD_TOKEN);
 console.log("ChatGPT Bot is Online on Discord")
-client.on('ready', client => {
-client.channels.cache.get('1076645441816494182').send('Bot Has Restarted!')
+const fs = require('fs');
+const guildsDir = './guilds/';
+
+client.on('ready', () => {
+  // Loop through each directory in the guilds folder
+  fs.readdirSync(guildsDir).forEach((guildDir) => {
+    // Read the settings.txt file for the guild
+    const settingsFile = guildsDir + guildDir + '/settings.txt';
+    const channelID = fs.readFileSync(settingsFile, 'utf8').trim();
+
+    // Send the message to the channel
+    const channel = client.channels.cache.get(channelID);
+    if (channel) {
+      channel.send('Bot has restarted!');
+    }
+  });
+
 client.user.setActivity({
   name: "for messages",
   type: ActivityType.Watching,
