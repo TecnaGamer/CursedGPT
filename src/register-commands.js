@@ -94,6 +94,20 @@ const commands = [
                     required: true
                 }
             ]
+        },
+        {
+            name: 'set-warning-logs',
+            description: 'Set where to log warnings triggered by the bots blacklist',
+            type: ApplicationCommandOptionType.Subcommand,
+            options:
+            [
+                {
+                    name: 'channel',
+                    description: 'Set the channel',
+                    type: ApplicationCommandOptionType.Channel,
+                    required: true
+                }
+            ]
         }
         ],
         defaultPermission: false,

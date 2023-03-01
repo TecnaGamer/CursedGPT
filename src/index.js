@@ -279,6 +279,39 @@ fs.writeFile(`guilds/${guild}/messages.txt`, '', function (err) {
       });
     }
 
+    if (interaction.options.getSubcommand() === 'set-warning-logs') {
+      const channel = interaction.options.getChannel('channel');
+      const channelId = channel.toString().match(/(\d+)/)[1];
+//      console.log(channelId);
+      
+      const guild = interaction.guildId;
+      
+      const fs = require('fs');
+    
+      const directory = `guilds/${guild}`;
+      const filename = `${directory}/warning-logs.txt`;
+    
+      // Create the directory if it doesn't exist
+      if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory);
+      }
+    
+      // Create the file if it doesn't exist
+      if (!fs.existsSync(filename)) {
+        fs.writeFileSync(filename, '');
+      }
+    
+      // Write to the file
+      fs.writeFile(filename, channelId.toString(), (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        console.log(`Successfully wrote to ${filename} // ${channelId}`);
+        interaction.reply(`Image logs channel set to ${channel}`);
+      });
+    }
+
 
   }
   
@@ -446,13 +479,21 @@ const trimmedText = text.substring(0, minIndex);
         if (wordsToDetect.some(word => badwordckeck.includes(word))) {
           // Run your code here
           console.log("Bad Word Detected");
-          message.reactions.removeAll()
+          const botUser = message.client.user;
+          const userReactions = message.reactions.cache.filter(reaction => reaction.users.cache.has(botUser.id));
+          for (const reaction of userReactions.values()) {
+            await reaction.users.remove(botUser.id);
+          }
           message.react('⚠️')
-          client.channels.cache.get('1078730517089890374').send(`Message:\n\
+          if (message.channel.type === 0) {
+            guild = message.guild.id
+            const fs = require('fs');
+            warnlogs = fs.readFileSync(`guilds/${guild}/warning-logs.txt`).toString().trim();
+          client.channels.cache.get(warnlogs).send(`Message:\n\
 ${message.author.username}: ${message.content}\n\
 Bot reply:\n\
 ${trimmedText}`)
-          
+          }
           client.user.setActivity({
             name: "for messages",
             type: ActivityType.Watching,
@@ -501,12 +542,18 @@ for (const reaction of userReactions.values()) {
 
     } catch (err) {
         console.log(err)
+
+        try {
+
         const botUser = message.client.user;
         const userReactions = message.reactions.cache.filter(reaction => reaction.users.cache.has(botUser.id));
         for (const reaction of userReactions.values()) {
           await reaction.users.remove(botUser.id);
         }
         message.react('❌')
+      } catch {
+        console.log('Originaol message was deleted');
+      }
 
         client.user.setActivity({
           name: "for messages",
