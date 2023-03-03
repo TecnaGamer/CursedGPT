@@ -62,7 +62,10 @@ console.log(progress);
     interaction.reply(`Prompt: ${prompt}\n\
     <a:sigmaspin:936805012145840138> Generating <a:sigmaspin:936805012145840138>`)
     console.log('Painting');
-  
+    client.user.setActivity({
+      name: "with a brush",
+      type: ActivityType.Playing,
+    })
     const { spawn } = require('child_process');
     const pyProg = spawn('python3.9', ['src/image_gen.py', prompt, steps, width, height], { detached: true });
   
@@ -101,7 +104,11 @@ console.log(progress);
 
 
     interaction.editReply({ content: `Prompt: ${prompt}`, files: [attachment] });
-    if (interaction.channel.type === 0) {
+    client.user.setActivity({
+      name: "for messages & commands",
+      type: ActivityType.Watching,
+    })
+    if (interaction.channel.type === 0) try {
       guild = interaction.guild.id
       const fs = require('fs');
       imagelogs = fs.readFileSync(`guilds/${guild}/image-logs.txt`).toString().trim();
@@ -109,6 +116,8 @@ console.log(progress);
       if (interaction.channelId !== imagelogs) {
       client.channels.cache.get(imagelogs).send({ content: `Prompt: ${prompt}`, files: [attachment] })
       }
+    } catch {
+      console.log('image log not set')
     }
 
 
@@ -117,6 +126,10 @@ console.log(progress);
   } } } catch (error) {
     console.error(error);
     interaction.editReply('❌Error making image❌');
+    client.user.setActivity({
+      name: "for messages & commands",
+      type: ActivityType.Watching,
+    })
   }
 
 
@@ -127,7 +140,7 @@ console.log(progress);
       if (interaction.channel.type === 1) {
         const dms = interaction.channel.id;
 
-        fs.writeFile(`dms/${dms}/messages.txt`, '', function (err) {
+        fs.writeFile(`dms/${dms}/messages.txt`, `[]`, function (err) {
           if (err) throw err;
           console.log('File cleared!');
         });
@@ -135,7 +148,7 @@ console.log(progress);
 
       const guild = interaction.guildId;
 
-fs.writeFile(`guilds/${guild}/messages.txt`, '', function (err) {
+fs.writeFile(`guilds/${guild}/messages.txt`, '[]', function (err) {
   if (err) throw err;
   console.log('File cleared!');
 });
@@ -334,6 +347,10 @@ fs.writeFile(`guilds/${guild}/messages.txt`, '', function (err) {
 
 //Check for when a message on discord is sent
 client.on('messageCreate', async function(message){
+   // Ignore a message if it starts with '//'
+    if (message.content.startsWith('//')) {
+    return;
+}
   let channel;
   let directory;
   let filename;
@@ -350,10 +367,10 @@ client.on('messageCreate', async function(message){
     }
           // Create the file if it doesn't exist
           if (!fs.existsSync(filename)) {
-            fs.writeFileSync(filename, '');
+            fs.writeFileSync(filename, `[]`);
           }
             filePath = `dms/${channel}/messages.txt`;
-  } else {
+  } else try {
     const guild = message.guild.id;
     const fs = require('fs');
     channel = fs.readFileSync(`guilds/${guild}/settings.txt`).toString().trim(); // read the channel ID from settings.txt
@@ -361,9 +378,294 @@ client.on('messageCreate', async function(message){
     const filename = `${directory}/messages.txt`;
           // Create the file if it doesn't exist
           if (!fs.existsSync(filename)) {
-            fs.writeFileSync(filename, '');
+            fs.writeFileSync(filename, `[]`);
           }
             filePath = `guilds/${guild}/messages.txt`;
+  } catch {
+    console.log('Chat channel not set')
+  }
+  try {
+    if(message.system || message.author.bot || message.channel.id !== channel) return; // only react to messages from the specified channel
+
+    // Start typing indicator and set custom status
+    await client.user.setActivity({
+      name: "with AI",
+      type: ActivityType.Playing,
+    })
+
+    await message.channel.sendTyping();
+
+    const reaction = await message.react('<a:sigmaspin:936805012145840138>');
+
+// Assume `client` is a valid Discord.js client object
+
+client.on('message', (message) => {
+  const channelId = message.channel.id;
+  console.log(`The channel ID is ${channelId}`);
+});
+
+//const charCount = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+// Count the number of messages
+//const messageCount = messages.length;
+
+// Log the message count
+//console.log("Number of messages:", messageCount);
+
+const MAX_CHARACTERS = 12000;
+
+const charCount = fs.readFileSync(filePath, 'utf8').trim().split('\n');
+let totalCharacters = charCount.join('').length;
+console.log(charCount.join('').length);
+
+// Read messages from file
+const messages = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+// Count the number of messages
+const messageCount = messages.length;
+
+// Log the message count
+console.log("Number of messages:", messageCount);
+
+// Delete oldest messages until message count is <= 75
+while (messages.length >= 50) {
+  const deletedMessage = messages.shift();
+  console.log("Deleted message:", deletedMessage);
+}
+
+// Write updated messages back to file
+fs.writeFileSync(filePath, JSON.stringify(messages));
+
+// Add a new message to the array
+const newMessage = {
+  role: 'user',
+  content: `${message.author.username}: ${message.content}`
+};
+messages.push(newMessage);
+
+// Write updated messages back to file
+fs.writeFileSync(filePath, JSON.stringify(messages));
+        console.log("Writing")
+
+        const prompt = [
+          {
+            "role": "system",
+            "content": "You are a Discord chatbot called 'CursedGPT' on the TGForever discord server. TGForever is a gaming community for teens and young adults. Some links for TGF are, Website: https://www.tgforever.org, Discord, https://discord.gg/tgf, Twitter: https://twitter.com/TGFServer. Try not to you bring up that your an AI. You can generate images via /image."
+          },
+          {
+            "role": "assistant",
+            "content": "CursedGPT: Hello!"
+          },
+        ];
+        const send = [...prompt, ...JSON.parse(fs.readFileSync(filePath))];
+        //console.log(send)
+
+        const gtpResponse = await openai.createChatCompletion({
+            model: "gpt-3.5-turbo",
+            messages: send
+        })
+
+const text = `${gtpResponse.data.choices[0].message.content}`;
+
+// Read the list of words to trim after from a file
+const words = fs.readFileSync("usernames.txt", "utf-8").split("\n").map(word => word.trim());
+
+// Find the smallest index of any word in the list in the input text
+let minIndex = text.length;
+words.forEach(word => {
+  const wordIndex = text.indexOf(word);
+  if (wordIndex !== -1 && wordIndex < minIndex) {
+    minIndex = wordIndex;
+  }
+});
+
+// Trim the text after the smallest index found (if any)
+const trimmedText = text.substring(0, minIndex);
+
+// Output the final trimmed text
+//console.log(botResponse);
+
+        const badwordckeck = `${trimmedText}`.toLowerCase();
+
+        // Read the list of words to detect from a file
+        const wordsToDetect = fs.readFileSync("blacklist.txt", "utf-8").split("\n").map(word => word.trim().toLowerCase());
+
+        // Check if any of the words to detect exist in the input text
+        if (wordsToDetect.some(word => badwordckeck.includes(word))) {
+        // Run your code here
+        //console.log("Word detected!");
+        
+        } else{
+// Read messages from file
+const messages = JSON.parse(fs.readFileSync(filePath, 'utf8'));
+
+// Add a new message to the array
+const newMessage = {
+  role: 'assistant',
+  content: `${trimmedText}`
+};
+messages.push(newMessage);
+
+// Write updated messages back to file
+fs.writeFileSync(filePath, JSON.stringify(messages));
+
+// Log the updated messages array
+//console.log(messages);
+
+        }
+        const username = message.author.username;
+        const userMessage = `\n${username}:`;  
+        
+        // Check if username already exists in the file
+        fs.readFile(userFilePath, 'utf8', function(err, data) {
+          if (err) throw err;
+          if (!data.includes(username)) {
+            fs.appendFile(userFilePath, userMessage, function (err) {
+              if (err) throw err;
+            });
+          }
+        });
+        
+
+
+        if (wordsToDetect.some(word => badwordckeck.includes(word))) {
+          // Run your code here
+          console.log("Bad Word Detected");
+          const botUser = message.client.user;
+          const userReactions = message.reactions.cache.filter(reaction => reaction.users.cache.has(botUser.id));
+          for (const reaction of userReactions.values()) {
+            await reaction.users.remove(botUser.id);
+          }
+          message.react('⚠️')
+          if (message.channel.type === 0) try {
+            guild = message.guild.id
+            const fs = require('fs');
+            warnlogs = fs.readFileSync(`guilds/${guild}/warning-logs.txt`).toString().trim();
+          client.channels.cache.get(warnlogs).send(`Message:\n\
+${message.author.username}: ${message.content}\n\
+Bot reply:\n\
+${trimmedText}`)
+          } catch {
+            console.log('warning logs not set')
+          }
+          client.user.setActivity({
+            name: "for messages & commands",
+            type: ActivityType.Watching,
+          })
+
+        } else {
+          const MAX_MESSAGE_LENGTH = 2000;
+
+          const str = trimmedText;
+          const finalMessage = str.replace("CursedGPT:", "");
+
+          if (finalMessage.length <= MAX_MESSAGE_LENGTH) {
+            // The text is short enough to send as a single message
+            message.reply(finalMessage);
+          } else {
+            // The text is too long, so split it into chunks and send each chunk separately
+            const chunks = [];
+            for (let i = 0; i < finalMessage.length; i += MAX_MESSAGE_LENGTH) {
+              chunks.push(finalMessage.slice(i, i + MAX_MESSAGE_LENGTH));
+            }
+            chunks.forEach((chunk) => {
+              message.reply(chunk);
+            });
+          }
+          
+
+          const botUser = message.client.user;
+const userReactions = message.reactions.cache.filter(reaction => reaction.users.cache.has(botUser.id));
+for (const reaction of userReactions.values()) {
+  await reaction.users.remove(botUser.id);
+}
+          
+          await message.react('✅');
+        client.user.setActivity({
+          name: "for messages & commands",
+          type: ActivityType.Watching,
+        })
+
+        console.log("Sent")
+        
+        
+        
+
+
+
+    //.catch(error => console.error('Failed to remove reactions:', error));
+    return;          
+        }
+
+    } catch (err) {
+        console.log(err)
+
+        try {
+
+        const botUser = message.client.user;
+        const userReactions = message.reactions.cache.filter(reaction => reaction.users.cache.has(botUser.id));
+        for (const reaction of userReactions.values()) {
+          await reaction.users.remove(botUser.id);
+        }
+        message.react('❌')
+      } catch {
+        console.log('Originaol message was deleted');
+      }
+
+        client.user.setActivity({
+          name: "for messages & commands",
+          type: ActivityType.Watching,
+        })
+    }
+    
+
+});
+
+
+
+
+
+
+
+
+
+
+//Check for when a message on discord is sent
+client.on('messageCreate', async function(message){
+   // Ignore a message if it starts with '//'
+  if (message.content.startsWith('//')) {
+    return;
+}
+  let channel;
+  let directory;
+  let filename;
+  let filePath = '';
+  if (message.channel.type === 1) {
+    return
+    console.log('Dm received')
+    channel = message.channel.id
+
+    const fs = require('fs'); 
+    const directory = `dms/${channel}`;
+    const filename = `${directory}/gpt-2-messages.txt`;
+    if (!fs.existsSync(directory)) {
+      fs.mkdirSync(directory);
+    }
+          // Create the file if it doesn't exist
+          if (!fs.existsSync(filename)) {
+            fs.writeFileSync(filename, '');
+          }
+            filePath = `dms/${channel}/gpt-2-messages.txt`;
+  } else {
+    //console.log(`${message.channel.id}`)
+    const guild = message.guild.id;
+    const fs = require('fs');
+    channel = '1081030222268342352';//fs.readFileSync(`guilds/${guild}/gpt-2-settings.txt`).toString().trim(); // read the channel ID from settings.txt
+    const directory = `guilds/${guild}`;
+    const filename = `${directory}/gpt-2-messages.txt`;
+          // Create the file if it doesn't exist
+          if (!fs.existsSync(filename)) {
+            fs.writeFileSync(filename, '');
+          }
+            filePath = `guilds/${guild}/gpt-2-messages.txt`;
   }
   try {
     if(message.system || message.author.bot || message.channel.id !== channel) return; // only react to messages from the specified channel
@@ -572,11 +874,6 @@ for (const reaction of userReactions.values()) {
 
 
 
-
-
-
-
-
 // Log the bit into Discord
 client.login(process.env.DISCORD_TOKEN);
 console.log("ChatGPT Bot is Online on Discord")
@@ -598,7 +895,7 @@ client.on('ready', () => {
   });
 
 client.user.setActivity({
-  name: "for messages",
+  name: "for messages & commands",
   type: ActivityType.Watching,
 })
 })

@@ -54,11 +54,11 @@ const commands = [
                 description: "Clear the bot's memory",
                 type: ApplicationCommandOptionType.Subcommand
             },
-            {
-                name: 'bump',
-                description: "Bumps the oldest line int he bot's memory.",
-                type: ApplicationCommandOptionType.Subcommand
-            }
+            // {
+            //     name: 'bump',
+            //     description: "Bumps the oldest line int he bot's memory.",
+            //     type: ApplicationCommandOptionType.Subcommand
+            // }
         ],
         defaultPermission: false,
     },
@@ -111,6 +111,73 @@ const commands = [
         }
         ],
         defaultPermission: false,
+    },
+    {
+        name: 'blacklist',
+        description: "Control what people can or can't do with the bot. Or prevent the bot from saying cretan things",
+        defaultPermission: false,
+        options:
+        [
+            {
+                name: 'list',
+                description: 'List the current list of blacklisted words/phrases',
+                type: ApplicationCommandOptionType.Subcommand
+            },
+            {
+                name: 'bot-response',
+                description: 'Prevent the bot from saying certan words/phrases',
+                type: ApplicationCommandOptionType.Subcommand,
+                options:
+                [
+                    {
+                        name: 'add',
+                        description: 'Add a word/phraze to the blacklist',
+                        type: ApplicationCommandOptionType.String
+                    },
+                    {
+                        name: 'remove',
+                        description: 'Remove a word/phraze from the blacklist',
+                        type: ApplicationCommandOptionType.String
+                    }
+                ]
+            },
+            {
+                name: 'ignore',
+                description: 'The bot will ignore messages containing these words/phrases',
+                type: ApplicationCommandOptionType.Subcommand,
+                options:
+                [
+                    {
+                        name: 'add',
+                        description: 'Add a word/phraze to the blacklist',
+                        type: ApplicationCommandOptionType.String
+                    },
+                    {
+                        name: 'remove',
+                        description: 'Remove a word/phraze from the blacklist',
+                        type: ApplicationCommandOptionType.String
+                    }
+                ]
+            },
+            {
+                name: 'image-gen',
+                description: 'Prevent people form entering ceartan words/phrases into the image gen',
+                type: ApplicationCommandOptionType.Subcommand,
+                options:
+                [
+                    {
+                        name: 'add',
+                        description: 'Add a word/phraze to the blacklist',
+                        type: ApplicationCommandOptionType.String
+                    },
+                    {
+                        name: 'remove',
+                        description: 'Remove a word/phraze from the blacklist',
+                        type: ApplicationCommandOptionType.String
+                    }
+                ]
+            },
+        ]
     }
 ];
 
