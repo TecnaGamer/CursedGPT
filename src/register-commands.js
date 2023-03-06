@@ -125,7 +125,41 @@ const commands = [
                     required: true
                 }
             ]
-        }
+        },
+        {
+            name: 'unset-chat',
+            description: 'Unsets the channel the bot will chat in',
+            type: ApplicationCommandOptionType.Subcommand,
+            options:
+            [
+                {
+                    name: 'model',
+                    description: 'Choose witch model to use',
+                    type: ApplicationCommandOptionType.String,
+                    choices:
+                    [
+                        {
+                            name: '3.5 turbo (ChatGPT) [Default]',
+                            value: '3-5-turbo',
+                        },
+                        {
+                            name: 'GPT 2 (Not as smart, may produce more chaotic results)',
+                            value: 'GPT-2',
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+        name: 'unset-image-logs',
+        description: 'Removes the image logs',
+        type: ApplicationCommandOptionType.Subcommand,
+    },
+    {
+        name: 'unset-warning-logs',
+        description: 'Removes the warning logs',
+        type: ApplicationCommandOptionType.Subcommand,
+    }
         ],
         defaultPermission: false,
     },

@@ -333,6 +333,112 @@ fs.writeFile(filename, channelId.toString(), (err) => {
       });
     }
 
+    if (interaction.options.getSubcommand() === 'unset-chat') {
+      const channel = 0
+      const channelId = channel.toString().match(/(\d+)/)[1];
+      const model = interaction.options.get('model')?.value ?? '3-5-turbo'
+
+//      console.log(channelId);
+      
+const fs = require('fs');
+
+const guild = interaction.guildId;
+let directory = `guilds/${guild}`;
+let filename = `${directory}/settings.txt`;
+let modelname = 'GPT 3.5 Turbo (ChatGPT)';
+console.log(model)
+if (model === 'GPT-2') {
+  filename = `${directory}/settings-gpt-2.txt`;
+  modelname = 'GPT 2'
+}
+
+// Create the directory if it doesn't exist
+if (!fs.existsSync(directory)) {
+  fs.mkdirSync(directory);
+}
+
+// Create the file if it doesn't exist
+if (!fs.existsSync(filename)) {
+  fs.writeFileSync(filename, '');
+}
+
+// Write to the file
+fs.writeFile(filename, channelId.toString(), (err) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+  console.log(`Successfully wrote to ${filename} // ${channelId}`);
+  interaction.reply(`Chat channel using ${modelname} has been unset`);
+});
+
+    }
+
+    if (interaction.options.getSubcommand() === 'unset-image-logs') {
+      const channel = 0
+      const channelId = channel.toString().match(/(\d+)/)[1];
+//      console.log(channelId);
+      
+      const guild = interaction.guildId;
+      
+      const fs = require('fs');
+    
+      const directory = `guilds/${guild}`;
+      const filename = `${directory}/image-logs.txt`;
+    
+      // Create the directory if it doesn't exist
+      if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory);
+      }
+    
+      // Create the file if it doesn't exist
+      if (!fs.existsSync(filename)) {
+        fs.writeFileSync(filename, '');
+      }
+    
+      // Write to the file
+      fs.writeFile(filename, channelId.toString(), (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        console.log(`Successfully wrote to ${filename} // ${channelId}`);
+        interaction.reply(`Image logs have been unset`);
+      });
+    }
+
+    if (interaction.options.getSubcommand() === 'unset-warning-logs') {
+      const channel = 0
+      const channelId = channel.toString().match(/(\d+)/)[1];
+//      console.log(channelId);
+      
+      const guild = interaction.guildId;
+      
+      const fs = require('fs');
+    
+      const directory = `guilds/${guild}`;
+      const filename = `${directory}/warning-logs.txt`;
+    
+      // Create the directory if it doesn't exist
+      if (!fs.existsSync(directory)) {
+        fs.mkdirSync(directory);
+      }
+    
+      // Create the file if it doesn't exist
+      if (!fs.existsSync(filename)) {
+        fs.writeFileSync(filename, '');
+      }
+    
+      // Write to the file
+      fs.writeFile(filename, channelId.toString(), (err) => {
+        if (err) {
+          console.error(err);
+          return;
+        }
+        console.log(`Successfully wrote to ${filename} // ${channelId}`);
+        interaction.reply(`Warning logs have been unset`);
+      });
+    }
 
   }
   
