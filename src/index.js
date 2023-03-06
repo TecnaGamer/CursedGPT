@@ -229,34 +229,42 @@ fs.writeFile(`guilds/${guild}/messages.txt`, '[]', function (err) {
     if (interaction.options.getSubcommand() === 'set-chat') {
       const channel = interaction.options.getChannel('channel');
       const channelId = channel.toString().match(/(\d+)/)[1];
+      const model = interaction.options.get('model')?.value ?? '3-5-turbo'
+
 //      console.log(channelId);
       
-      const guild = interaction.guildId;
-      
-      const fs = require('fs');
-    
-      const directory = `guilds/${guild}`;
-      const filename = `${directory}/settings.txt`;
-    
-      // Create the directory if it doesn't exist
-      if (!fs.existsSync(directory)) {
-        fs.mkdirSync(directory);
-      }
-    
-      // Create the file if it doesn't exist
-      if (!fs.existsSync(filename)) {
-        fs.writeFileSync(filename, '');
-      }
-    
-      // Write to the file
-      fs.writeFile(filename, channelId.toString(), (err) => {
-        if (err) {
-          console.error(err);
-          return;
-        }
-        console.log(`Successfully wrote to ${filename} // ${channelId}`);
-        interaction.reply(`Chat channel set to ${channel}`);
-      });
+const fs = require('fs');
+
+const guild = interaction.guildId;
+let directory = `guilds/${guild}`;
+let filename = `${directory}/settings.txt`;
+let modelname = 'GPT 3.5 Turbo (ChatGPT)';
+console.log(model)
+if (model === 'GPT-2') {
+  filename = `${directory}/settings-gpt-2.txt`;
+  modelname = 'GPT 2'
+}
+
+// Create the directory if it doesn't exist
+if (!fs.existsSync(directory)) {
+  fs.mkdirSync(directory);
+}
+
+// Create the file if it doesn't exist
+if (!fs.existsSync(filename)) {
+  fs.writeFileSync(filename, '');
+}
+
+// Write to the file
+fs.writeFile(filename, channelId.toString(), (err) => {
+  if (err) {
+    console.error(err);
+    return;
+  }
+  console.log(`Successfully wrote to ${filename} // ${channelId}`);
+  interaction.reply(`Chat channel set to ${channel} using ${modelname}`);
+});
+
     }
 
     if (interaction.options.getSubcommand() === 'set-image-logs') {
@@ -658,7 +666,10 @@ client.on('messageCreate', async function(message){
     //console.log(`${message.channel.id}`)
     const guild = message.guild.id;
     const fs = require('fs');
-    channel = '1081030222268342352';//fs.readFileSync(`guilds/${guild}/gpt-2-settings.txt`).toString().trim(); // read the channel ID from settings.txt
+    if (!fs.existsSync(`guilds/${guild}/settings-gpt-2.txt`)) {
+    return
+    }
+    channel = fs.readFileSync(`guilds/${guild}/settings-gpt-2.txt`).toString().trim(); // read the channel ID from settings.txt
     const directory = `guilds/${guild}`;
     const filename = `${directory}/gpt-2-messages.txt`;
           // Create the file if it doesn't exist

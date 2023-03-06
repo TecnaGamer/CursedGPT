@@ -1,5 +1,6 @@
 require('dotenv').config();
 const { REST, Routes, ApplicationCommandOptionType} = require('discord.js');
+const { value } = require('promisify');
 
 const commands = [
     {
@@ -78,6 +79,22 @@ const commands = [
                         description: 'Set the channel',
                         type: ApplicationCommandOptionType.Channel,
                         required: true
+                    },
+                    {
+                        name: 'model',
+                        description: 'Choose witch model to use',
+                        type: ApplicationCommandOptionType.String,
+                        choices:
+                        [
+                            {
+                                name: '3.5 turbo (ChatGPT) [Default]',
+                                value: '3-5-turbo',
+                            },
+                            {
+                                name: 'GPT 2 (Not as smart, may produce more chaotic results)',
+                                value: 'GPT-2',
+                            }
+                        ]
                     }
                 ]
             },
