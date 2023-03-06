@@ -6,6 +6,7 @@ Project Description
 
 ### Todo
 
+- [ ] Bug testing  
 - [ ] /prompt  
 - [ ] /about  
 - [ ] /help  
