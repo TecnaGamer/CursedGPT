@@ -1001,6 +1001,7 @@ client.on('ready', () => {
   // Loop through each directory in the guilds folder
   fs.readdirSync(guildsDir).forEach((guildDir) => {
     // Read the settings.txt file for the guild
+    try {
     const settingsFile = guildsDir + guildDir + '/settings.txt';
     const channelID = fs.readFileSync(settingsFile, 'utf8').trim();
 
@@ -1009,6 +1010,16 @@ client.on('ready', () => {
     if (channel) {
       channel.send('Bot has restarted!');
     }
+
+    } catch {}
+    try {
+      const settingsFilegpt2 = guildsDir + guildDir + '/settings-gpt-2.txt';
+      const channelIDgpt2 = fs.readFileSync(settingsFilegpt2, 'utf8').trim();
+      const channelgpt2 = client.channels.cache.get(channelIDgpt2);
+      if (channelgpt2) {
+        channelgpt2.send('Bot has restarted!');
+      }
+    } catch{}
   });
 
 client.user.setActivity({
