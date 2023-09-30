@@ -1,6 +1,15 @@
 require('dotenv').config();
 const { REST, Routes, ApplicationCommandOptionType} = require('discord.js');
 const { value } = require('promisify');
+const fs = require('fs');
+const path = require('path');
+
+// Read the content of list.txt synchronously
+const listFilePath = path.join(__dirname, '../list.txt');
+const listContent = fs.readFileSync(listFilePath, 'utf8');
+
+// Parse the JSON content from list.txt
+const voiceChoices = JSON.parse(listContent);
 
 const commands = [
     {
@@ -32,19 +41,26 @@ const commands = [
             
         ]
     },
-    // {
-    //     name: 'talk',
-    //     description: 'Make the bot say a message on a blank memory',
-    //     options: 
-    //     [
-    //         {
-    //         name: 'prompt',
-    //         description: 'prompt for the bot',
-    //         type: ApplicationCommandOptionType.String,
-    //         required: true,
-    //         }
-    //     ]
-    // },
+    {
+        name: 'tts',
+        description: 'Make the bot talk using ai voices',
+        // options:
+        // [
+        //     {
+        //         name: 'message',
+        //         description: 'What will the bot say',
+        //         type: ApplicationCommandOptionType.String,
+        //         required: true,
+        //     },
+        //     {
+        //         name: 'voice',
+        //         description: 'What voice should the bot use',
+        //         type: ApplicationCommandOptionType.String,
+        //         required: true,
+        //         choices: voiceChoices,
+        //     }
+        // ],
+    },
     {
         name: 'memory',
         description: 'Tools for the bots memory',
@@ -89,6 +105,10 @@ const commands = [
                             {
                                 name: '3.5 turbo (ChatGPT) [Default]',
                                 value: '3-5-turbo',
+                            },
+                            {
+                                name: 'GPT 4',
+                                value: 'GPT-4',
                             },
                             {
                                 name: 'GPT 2 (Not as smart, may produce more chaotic results)',
@@ -231,6 +251,9 @@ const commands = [
         ]
     }
 ];
+
+
+
 
 const rest = new REST({ version: '10' }).setToken(process.env.DISCORD_TOKEN);
 

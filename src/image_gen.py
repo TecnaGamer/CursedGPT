@@ -7,7 +7,7 @@ import sys
 
 from PIL import Image, PngImagePlugin
 
-url = "http://127.0.0.1:7860"
+url = "http://192.168.68.66:7860"
 
 print('int')
 
